@@ -313,7 +313,7 @@ time_t t;
 #ifdef PAPI_INTERFAZ
     int retval = PAPI_stop(EventSet, values);
     if (retval != PAPI_OK) {
-        fprintf(stderr, "Error al detener la medición\n");
+        fprintf(stderr, "PAPI error: stop counters\n");
         exit(1);
     }
 
