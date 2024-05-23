@@ -1,6 +1,6 @@
 # Set the Makefile:
 
-Set the corresponding paths to the MPI library in use inside the Makefile
+Set the corresponding paths to the MPI library and PAPI library (in case it will be used) in use inside the Makefile
 
 # Build the library:
 
