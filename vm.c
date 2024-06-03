@@ -40,9 +40,9 @@ void mpi_reduce_(const void *sendbuf, void *recvbuf, int *count, MPI_Datatype *d
 int ret;
 double ini, end;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
         ret = PMPI_Reduce(sendbuf, recvbuf, *count, *datatype, *op, *root, *comm);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         reduce_time += end-ini;
 
         ierr = &ret;
@@ -54,9 +54,9 @@ void mpi_allreduce_(const void *sendbuf, void *recvbuf, int *count,
 int ret;
 double ini, end;
 
-	ini=MPI_Wtime();
+	ini=PMPI_Wtime();
 	ret = PMPI_Allreduce(sendbuf, recvbuf, *count, *datatype, *op, *comm);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         allreduce_time += end-ini;
 
         ierr=&ret; 
@@ -68,9 +68,9 @@ void mpi_alltoall_ (void *sendbuf, int *sendcount, MPI_Datatype *sendtype,
 int ret;
 double ini, end;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
 	ret=PMPI_Alltoall(sendbuf, *sendcount, *sendtype, recvbuf, *recvcount, *recvtype,  *comm);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         alltoall_time += end-ini;
 
         ierr=&ret;
@@ -81,9 +81,9 @@ void mpi_bcast_( void *buffer, int *count, MPI_Datatype *datatype, int *root, MP
 int ret;
 double ini, end;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
 	ret=PMPI_Bcast(buffer, *count,  *datatype, *root,  *comm );
-	end=MPI_Wtime();
+	end=PMPI_Wtime();
         bcast_time += end-ini;
 
         ierr = &ret;
@@ -97,9 +97,9 @@ void mpi_recv_(void *buf, int *count, MPI_Datatype *datatype, int *source, int *
 int ret;
 double ini, end;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
 	ret=PMPI_Recv(buf, *count, *datatype, *source, *tag, *comm, status);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         recv_time += end-ini;
 
         ierr = &ret;
@@ -111,9 +111,9 @@ void mpi_wait_(MPI_Request *request, MPI_Status *status, int *ierr)
 int ret;
 double ini, end;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
 	ret=PMPI_Wait(request, status);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         wait_time += end-ini;
 
         ierr = &ret;
@@ -126,9 +126,9 @@ void mpi_waitall_(int *count, MPI_Request array_of_requests[],
 int ret;
 double ini, end;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
         ret=PMPI_Waitall(*count, array_of_requests, array_of_statuses);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         waitall_time += end-ini;
 
         ierr = &ret;
@@ -140,9 +140,9 @@ void mpi_irecv_(void *buf, int *count, MPI_Datatype *datatype, int *source,
 double ini, end;
 int ret;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
         ret=PMPI_Irecv(buf, *count, *datatype, *source, *tag, *comm, request);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         irecv_time += end-ini;
 
         ierr = &ret;
@@ -155,9 +155,9 @@ void mpi_isend_(const void *buf, int *count, MPI_Datatype *datatype,
 double ini, end;
 int ret;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
         ret=PMPI_Isend(buf, *count, *datatype, *dest, *tag, *comm, request);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         isend_time += end-ini;
 
         ierr = &ret;
@@ -169,9 +169,9 @@ void mpi_send_(const void *buf, int *count, MPI_Datatype *datatype, int *dest,
 double ini, end;
 int ret;
 
-        ini=MPI_Wtime();
+        ini=PMPI_Wtime();
 	ret=PMPI_Send(buf, *count, *datatype, *dest, *tag, *comm);
-        end=MPI_Wtime();
+        end=PMPI_Wtime();
         send_time += end-ini;
 
         ierr = &ret;
@@ -180,9 +180,9 @@ int ret;
 void mpi_barrier_ (MPI_Comm *comm, int *ierr)
 {
 double ini, end;
-        ini = MPI_Wtime();
+        ini = PMPI_Wtime();
 	*ierr=PMPI_Barrier(*comm);
-        end = MPI_Wtime();
+        end = PMPI_Wtime();
 	barrier_time += (end-ini);
 }
 
@@ -191,10 +191,10 @@ void mpi_gather_ (const void *sendbuf, int *sendcount, MPI_Datatype *sendtype,
     MPI_Comm *comm, int *ierr)
 {
 	double ini, end;
-        ini = MPI_Wtime();
+        ini = PMPI_Wtime();
         *ierr=PMPI_Gather (sendbuf, *sendcount, *sendtype, recvbuf, *recvcount, 
 			   *recvtype, *root, *comm);
-        end = MPI_Wtime();
+        end = PMPI_Wtime();
         gather_time += (end-ini);
 }
 
@@ -203,10 +203,10 @@ void mpi_allgather_ (const void *sendbuf, int  *sendcount,
      MPI_Datatype *recvtype, MPI_Comm *comm, int *ierr)
 {
 double ini, end;
-        ini = MPI_Wtime();
+        ini = PMPI_Wtime();
         *ierr=PMPI_Allgather(sendbuf, *sendcount, *sendtype, recvbuf, *recvcount,
 			*recvtype, *comm);
-        end = MPI_Wtime();
+        end = PMPI_Wtime();
         allgather_time += (end-ini);
 }
 
@@ -215,10 +215,10 @@ void mpi_scatter_ (const void *sendbuf, int *sendcount, MPI_Datatype *sendtype,
     MPI_Comm *comm, int *ierr)
 {
 double ini, end;
-        ini = MPI_Wtime();
+        ini = PMPI_Wtime();
         *ierr=PMPI_Scatter (sendbuf, *sendcount, *sendtype, recvbuf, *recvcount, 
 			*recvtype, *root, *comm);
-        end = MPI_Wtime();
+        end = PMPI_Wtime();
         scatter_time += (end-ini);
 }
 
@@ -226,9 +226,9 @@ void mpi_waitany_ (int *count, MPI_Request array_of_requests[],
     int *index, MPI_Status *status, int *ierr)
 {
 	double ini, end;
-        ini = MPI_Wtime();
+        ini = PMPI_Wtime();
         *ierr=PMPI_Waitany (*count, array_of_requests, index, status);
-        end = MPI_Wtime();
+        end = PMPI_Wtime();
         waitany_time += (end-ini);
 }
 #endif
@@ -321,7 +321,7 @@ time_t t;
 
     long long tot[NUM_EVENTS];
 
-    MPI_Reduce(values, tot, NUM_EVENTS, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+    PMPI_Reduce(values, tot, NUM_EVENTS, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (myrank==0)
     printf("TOT: %lld %lld %lld  %.3f \n", tot[0], tot[1], tot[2], end_time-start_time);
@@ -339,7 +339,7 @@ time_t t;
 
 	mpi_time = allreduce_time+reduce_time+isend_time+send_time+irecv_time+recv_time+sendrecv_time+wait_time+waitall_time+waitany_time+barrier_time+alltoall_time+scatter_time+gather_time+allgather_time+bcast_time;
         
-        MPI_Reduce(&mpi_time, &tot_mpi, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        PMPI_Reduce(&mpi_time, &tot_mpi, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	if (myrank==0)
         printf("\n EXECTIME: %.3f %.3f\n",  end_time-start_time, tot_mpi);
@@ -349,7 +349,7 @@ time_t t;
         printf("\n EXECTIME: %.3f \n",  end_time-start_time);
 #endif
 
-	MPI_Barrier (MPI_COMM_WORLD);
+	PMPI_Barrier (MPI_COMM_WORLD);
 
 return ret;
 }
