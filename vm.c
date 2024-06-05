@@ -35,78 +35,77 @@ double alltoall_time=0, wait_time=0, irecv_time=0, isend_time=0, send_time=0, re
 
 #ifdef MPI_INTERFAZ
 
-void mpi_reduce_(const void *sendbuf, void *recvbuf, int *count, MPI_Datatype *datatype, MPI_Op *op, int *root, MPI_Comm *comm, int *ierr)
+int MPI_Reduce (const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm)
 {
 int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-        ret = PMPI_Reduce(sendbuf, recvbuf, *count, *datatype, *op, *root, *comm);
+        ret = PMPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm);
         end=PMPI_Wtime();
         reduce_time += end-ini;
 
-        ierr = &ret;
+        return ret;
 }
 
-void mpi_allreduce_(const void *sendbuf, void *recvbuf, int *count,
-                         MPI_Datatype *datatype, MPI_Op *op, MPI_Comm *comm, int *ierr)
+int MPI_Allreduce (const void *sendbuf, void *recvbuf, int count,
+                         MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
 {
 int ret;
 double ini, end;
 
 	ini=PMPI_Wtime();
-	ret = PMPI_Allreduce(sendbuf, recvbuf, *count, *datatype, *op, *comm);
+	ret = PMPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
         end=PMPI_Wtime();
         allreduce_time += end-ini;
 
-        ierr=&ret; 
+        return ret;
 }
 
-void mpi_alltoall_ (void *sendbuf, int *sendcount, MPI_Datatype *sendtype,
-                    void *recvbuf, int *recvcount, MPI_Datatype *recvtype, MPI_Comm *comm, int *ierr)
+int MPI_Alltoall (const void *sendbuf, int sendcount, MPI_Datatype sendtype,
+                    void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
 int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Alltoall(sendbuf, *sendcount, *sendtype, recvbuf, *recvcount, *recvtype,  *comm);
+	ret=PMPI_Alltoall(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype,  comm);
         end=PMPI_Wtime();
         alltoall_time += end-ini;
 
-        ierr=&ret;
+        return ret;
 }
 
-void mpi_bcast_( void *buffer, int *count, MPI_Datatype *datatype, int *root, MPI_Comm *comm, int *ierr)
+int MPI_Bcast ( void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
 {
 int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Bcast(buffer, *count,  *datatype, *root,  *comm );
+	ret=PMPI_Bcast(buffer, count,  datatype, root,  comm );
 	end=PMPI_Wtime();
         bcast_time += end-ini;
 
-        ierr = &ret;
+        return ret;
 
 }
 
 
-void mpi_recv_(void *buf, int *count, MPI_Datatype *datatype, int *source, int *tag,
-                    MPI_Comm *comm, MPI_Status *status, int *ierr)
+int MPI_Recv (void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
 int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Recv(buf, *count, *datatype, *source, *tag, *comm, status);
+	ret=PMPI_Recv(buf, count, datatype, source, tag, comm, status);
         end=PMPI_Wtime();
         recv_time += end-ini;
 
-        ierr = &ret;
+        return ret;
 
 }
 
-void mpi_wait_(MPI_Request *request, MPI_Status *status, int *ierr)
+int MPI_Wait (MPI_Request *request, MPI_Status *status)
 {
 int ret;
 double ini, end;
@@ -116,120 +115,125 @@ double ini, end;
         end=PMPI_Wtime();
         wait_time += end-ini;
 
-        ierr = &ret;
+        return ret;
 
 }
 
-void mpi_waitall_(int *count, MPI_Request array_of_requests[],
-                      MPI_Status array_of_statuses[], int *ierr)
+int MPI_Waitall (int count, MPI_Request array_of_requests[],
+                      MPI_Status array_of_statuses[])
 {
 int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-        ret=PMPI_Waitall(*count, array_of_requests, array_of_statuses);
+        ret=PMPI_Waitall(count, array_of_requests, array_of_statuses);
         end=PMPI_Wtime();
         waitall_time += end-ini;
 
-        ierr = &ret;
+        return ret;
 }
 
-void mpi_irecv_(void *buf, int *count, MPI_Datatype *datatype, int *source,
-                     int *tag, MPI_Comm *comm, MPI_Request *request, int *ierr)
+int MPI_Irecv(void *buf, int count, MPI_Datatype datatype, int source,
+                     int tag, MPI_Comm comm, MPI_Request *request)
 {
 double ini, end;
 int ret;
 
         ini=PMPI_Wtime();
-        ret=PMPI_Irecv(buf, *count, *datatype, *source, *tag, *comm, request);
+        ret=PMPI_Irecv(buf, count, datatype, source, tag, comm, request);
         end=PMPI_Wtime();
         irecv_time += end-ini;
 
-        ierr = &ret;
+        return ret;
 }
 
 
-void mpi_isend_(const void *buf, int *count, MPI_Datatype *datatype,
-                     int *dest, int *tag, MPI_Comm *comm, MPI_Request *request, int *ierr)
+int MPI_Isend(const void *buf, int count, MPI_Datatype datatype,
+                     int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
 double ini, end;
 int ret;
 
         ini=PMPI_Wtime();
-        ret=PMPI_Isend(buf, *count, *datatype, *dest, *tag, *comm, request);
+        ret=PMPI_Isend(buf, count, datatype, dest, tag, comm, request);
         end=PMPI_Wtime();
         isend_time += end-ini;
 
-        ierr = &ret;
+        return ret;
 }
 
-void mpi_send_(const void *buf, int *count, MPI_Datatype *datatype, int *dest,
-                    int *tag, MPI_Comm *comm, int *ierr)
+int MPI_Send(const void *buf, int count, MPI_Datatype datatype, int dest,
+                    int tag, MPI_Comm comm)
 {
 double ini, end;
 int ret;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Send(buf, *count, *datatype, *dest, *tag, *comm);
+	ret=PMPI_Send(buf, count, datatype, dest, tag, comm);
         end=PMPI_Wtime();
         send_time += end-ini;
 
-        ierr = &ret;
+        return ret;
 }
 
-void mpi_barrier_ (MPI_Comm *comm, int *ierr)
+int MPI_Barrier (MPI_Comm comm)
 {
 double ini, end;
         ini = PMPI_Wtime();
-	*ierr=PMPI_Barrier(*comm);
+	int ret = PMPI_Barrier(comm);
         end = PMPI_Wtime();
 	barrier_time += (end-ini);
+	return ret;
 }
 
-void mpi_gather_ (const void *sendbuf, int *sendcount, MPI_Datatype *sendtype,
-    void *recvbuf, int *recvcount, MPI_Datatype *recvtype, int *root,
-    MPI_Comm *comm, int *ierr)
+int MPI_Gather (const void *sendbuf, int sendcount, MPI_Datatype sendtype,
+    void *recvbuf, int recvcount, MPI_Datatype recvtype, int root,
+    MPI_Comm comm)
 {
 	double ini, end;
         ini = PMPI_Wtime();
-        *ierr=PMPI_Gather (sendbuf, *sendcount, *sendtype, recvbuf, *recvcount, 
-			   *recvtype, *root, *comm);
+        int ret =PMPI_Gather (sendbuf, sendcount, sendtype, recvbuf, recvcount, 
+			   recvtype, root, comm);
         end = PMPI_Wtime();
         gather_time += (end-ini);
+	return ret;
 }
 
-void mpi_allgather_ (const void *sendbuf, int  *sendcount,
-     MPI_Datatype *sendtype, void *recvbuf, int *recvcount,
-     MPI_Datatype *recvtype, MPI_Comm *comm, int *ierr)
+int MPI_Allgather (const void *sendbuf, int  sendcount,
+     MPI_Datatype sendtype, void *recvbuf, int recvcount,
+     MPI_Datatype recvtype, MPI_Comm comm)
 {
 double ini, end;
         ini = PMPI_Wtime();
-        *ierr=PMPI_Allgather(sendbuf, *sendcount, *sendtype, recvbuf, *recvcount,
-			*recvtype, *comm);
+        int ret=PMPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount,
+			recvtype, comm);
         end = PMPI_Wtime();
         allgather_time += (end-ini);
+	return ret;
 }
 
-void mpi_scatter_ (const void *sendbuf, int *sendcount, MPI_Datatype *sendtype,
-    void *recvbuf, int *recvcount, MPI_Datatype *recvtype, int *root,
-    MPI_Comm *comm, int *ierr)
+int MPI_Scatter (const void *sendbuf, int sendcount, MPI_Datatype sendtype,
+    void *recvbuf, int recvcount, MPI_Datatype recvtype, int root,
+    MPI_Comm comm)
 {
 double ini, end;
         ini = PMPI_Wtime();
-        *ierr=PMPI_Scatter (sendbuf, *sendcount, *sendtype, recvbuf, *recvcount, 
-			*recvtype, *root, *comm);
+        int ret =PMPI_Scatter (sendbuf, sendcount, sendtype, recvbuf, recvcount, 
+			recvtype, root, comm);
         end = PMPI_Wtime();
         scatter_time += (end-ini);
+	return ret;
 }
 
-void mpi_waitany_ (int *count, MPI_Request array_of_requests[],
-    int *index, MPI_Status *status, int *ierr)
+int MPI_Waitany (int count, MPI_Request array_of_requests[],
+    int *index, MPI_Status *status)
 {
 	double ini, end;
         ini = PMPI_Wtime();
-        *ierr=PMPI_Waitany (*count, array_of_requests, index, status);
+        int ret =PMPI_Waitany (count, array_of_requests, index, status);
         end = PMPI_Wtime();
         waitany_time += (end-ini);
+	return ret;
 }
 #endif
 
