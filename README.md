@@ -31,6 +31,7 @@ In order to differentiate from an ordinary call the parameters must be set in th
 
 Example of use:
 
+    int flag;
     flag = 1;
     MPI_Test (NULL, &flag, MPI_STATUS_IGNORE);
     // region of code to be tracked
