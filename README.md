@@ -20,6 +20,7 @@ mpirun -np 4 program
 
 Instrument the code by adding MPI_Test at the beginning and at the end of the code you want to track HW counters specifically.
 The API for MPI_Test is:
+
      int MPI_Test(MPI_Request *request, int *flag, MPI_Status *status)
 
 In order to differentiate from an ordinary call the parameters must be set in this way:
@@ -29,6 +30,7 @@ In order to differentiate from an ordinary call the parameters must be set in th
 - status is unused
 
 Example of use:
+
     MPI_Request *request;
     ...
     flag = 1;
