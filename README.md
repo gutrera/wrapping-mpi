@@ -32,7 +32,6 @@ In order to differentiate from an ordinary call the parameters must be set in th
 Example of use:
 
     MPI_Request *request;
-    ...
     flag = 1;
     request = NULL;
     MPI_Test (request, &flag, MPI_STATUS_IGNORE);
