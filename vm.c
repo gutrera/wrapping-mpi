@@ -4,6 +4,9 @@
 #define MPI_INTERFAZ
 #define PAPI_INTERFAZ  
 
+#define MANUAL_PAPI_READ_BEGIN 1
+#define MANUAL_PAPI_READ_FINISH 2
+
 #ifdef PAPI_INTERFAZ
 #include "papi.h"
 #endif
@@ -15,17 +18,15 @@ pid_t mypid=-1;
 int mycpu;
 int nprocesses;
 
-int myrank=-1; 
+int myrank=-1;
 
 double start_time, init_time, end_time;
 
 double alltoall_time=0, wait_time=0, irecv_time=0, isend_time=0, send_time=0, recv_time=0, barrier_time=0, waitall_time=0, reduce_time=0, allreduce_time=0, split_time, bcast_time=0,  waitany_time=0, sendrecv_time=0, gather_time=0, allgather_time=0, scatter_time=0;
-
-
 #ifdef PAPI_INTERFAZ
     #define NUM_EVENTS 3
     int EventSet = PAPI_NULL;
-    long long values[NUM_EVENTS];
+    long long values[NUM_EVENTS], values_current[NUM_EVENTS], values_partial[NUM_EVENTS];
     //int events[NUM_EVENTS] = {PAPI_VEC_DP, PAPI_DP_OPS}; //{PAPI_FP_OPS}; //{PAPI_TOT_INS};
     int events[NUM_EVENTS] = {PAPI_VEC_DP, PAPI_VEC_SP, PAPI_L2_DCM}; //{PAPI_FP_OPS}; //{PAPI_TOT_INS};
 #endif
@@ -54,14 +55,13 @@ int MPI_Allreduce (const void *sendbuf, void *recvbuf, int count,
 int ret;
 double ini, end;
 
-	ini=PMPI_Wtime();
-	ret = PMPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
+        ini=PMPI_Wtime();
+        ret = PMPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
         end=PMPI_Wtime();
         allreduce_time += end-ini;
 
         return ret;
 }
-
 int MPI_Alltoall (const void *sendbuf, int sendcount, MPI_Datatype sendtype,
                     void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
@@ -69,7 +69,7 @@ int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Alltoall(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype,  comm);
+        ret=PMPI_Alltoall(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype,  comm);
         end=PMPI_Wtime();
         alltoall_time += end-ini;
 
@@ -82,22 +82,19 @@ int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Bcast(buffer, count,  datatype, root,  comm );
-	end=PMPI_Wtime();
+        ret=PMPI_Bcast(buffer, count,  datatype, root,  comm );
+        end=PMPI_Wtime();
         bcast_time += end-ini;
 
         return ret;
-
 }
-
-
 int MPI_Recv (void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
 int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Recv(buf, count, datatype, source, tag, comm, status);
+        ret=PMPI_Recv(buf, count, datatype, source, tag, comm, status);
         end=PMPI_Wtime();
         recv_time += end-ini;
 
@@ -111,7 +108,7 @@ int ret;
 double ini, end;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Wait(request, status);
+        ret=PMPI_Wait(request, status);
         end=PMPI_Wtime();
         wait_time += end-ini;
 
@@ -146,8 +143,6 @@ int ret;
 
         return ret;
 }
-
-
 int MPI_Isend(const void *buf, int count, MPI_Datatype datatype,
                      int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
@@ -169,36 +164,33 @@ double ini, end;
 int ret;
 
         ini=PMPI_Wtime();
-	ret=PMPI_Send(buf, count, datatype, dest, tag, comm);
+        ret=PMPI_Send(buf, count, datatype, dest, tag, comm);
         end=PMPI_Wtime();
         send_time += end-ini;
 
         return ret;
-}
-
-int MPI_Barrier (MPI_Comm comm)
+}int MPI_Barrier (MPI_Comm comm)
 {
 double ini, end;
         ini = PMPI_Wtime();
-	int ret = PMPI_Barrier(comm);
+        int ret = PMPI_Barrier(comm);
         end = PMPI_Wtime();
-	barrier_time += (end-ini);
-	return ret;
+        barrier_time += (end-ini);
+        return ret;
 }
 
 int MPI_Gather (const void *sendbuf, int sendcount, MPI_Datatype sendtype,
     void *recvbuf, int recvcount, MPI_Datatype recvtype, int root,
     MPI_Comm comm)
 {
-	double ini, end;
+        double ini, end;
         ini = PMPI_Wtime();
-        int ret =PMPI_Gather (sendbuf, sendcount, sendtype, recvbuf, recvcount, 
-			   recvtype, root, comm);
+        int ret =PMPI_Gather (sendbuf, sendcount, sendtype, recvbuf, recvcount,
+                           recvtype, root, comm);
         end = PMPI_Wtime();
         gather_time += (end-ini);
-	return ret;
+        return ret;
 }
-
 int MPI_Allgather (const void *sendbuf, int  sendcount,
      MPI_Datatype sendtype, void *recvbuf, int recvcount,
      MPI_Datatype recvtype, MPI_Comm comm)
@@ -206,10 +198,10 @@ int MPI_Allgather (const void *sendbuf, int  sendcount,
 double ini, end;
         ini = PMPI_Wtime();
         int ret=PMPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount,
-			recvtype, comm);
+                        recvtype, comm);
         end = PMPI_Wtime();
         allgather_time += (end-ini);
-	return ret;
+        return ret;
 }
 
 int MPI_Scatter (const void *sendbuf, int sendcount, MPI_Datatype sendtype,
@@ -218,25 +210,49 @@ int MPI_Scatter (const void *sendbuf, int sendcount, MPI_Datatype sendtype,
 {
 double ini, end;
         ini = PMPI_Wtime();
-        int ret =PMPI_Scatter (sendbuf, sendcount, sendtype, recvbuf, recvcount, 
-			recvtype, root, comm);
+        int ret =PMPI_Scatter (sendbuf, sendcount, sendtype, recvbuf, recvcount,
+                        recvtype, root, comm);
         end = PMPI_Wtime();
         scatter_time += (end-ini);
-	return ret;
+        return ret;
 }
-
 int MPI_Waitany (int count, MPI_Request array_of_requests[],
     int *index, MPI_Status *status)
 {
-	double ini, end;
+        double ini, end;
         ini = PMPI_Wtime();
         int ret =PMPI_Waitany (count, array_of_requests, index, status);
         end = PMPI_Wtime();
         waitany_time += (end-ini);
-	return ret;
+        return ret;
 }
 #endif
 
+int MPI_Test(MPI_Request *request, int *flag, MPI_Status *status)
+{
+        int ret;
+        #ifdef PAPI_INTERFAZ
+        if (request == NULL) {
+                long long tmp[NUM_EVENTS];
+                int retval = PAPI_read(EventSet, tmp);
+                if (retval != PAPI_OK) {
+                        fprintf(stderr, "Error: read counters\n");
+                }
+                if (*flag==MANUAL_PAPI_READ_BEGIN) {
+                        for (int i=0; i<NUM_EVENTS; i++) values_current[i] = tmp[i];
+                }
+                else if (*flag== MANUAL_PAPI_READ_FINISH)
+                       for (int i=0; i<NUM_EVENTS; i++) values_partial[i] += (tmp[i]-values_current[i]);
+                else
+                        printf("\nMPI_Test: unknown values for flag (%d)\n", *flag);
+        }
+        #else
+                // original call 
+                ret = PMPI_Test (request, flag, status);
+        #endif
+
+        return ret;
+}
 int MPI_Finalize ()
 {
 int ret;
@@ -253,8 +269,6 @@ int ret;
      ret= mpi_init_wrapper ();
      return ret;
 }
-
-
 /**** Wrappers code *****/
 
 int mpi_init_wrapper ()
@@ -294,14 +308,13 @@ double ini, end;
         fprintf(stderr, "PAPI error: starting counters \n");
         exit(1);
     }
+    for (int i=0; i<NUM_EVENTS; i++) values_partial[i]=0;
 #endif
 
 
      start_time = PMPI_Wtime();
      return ret;
 }
-
-
 int mpi_finalize_wrapper ()
 {
 int ret;
@@ -312,7 +325,7 @@ int n;
 time_t t;
 
 
-	end_time = PMPI_Wtime();
+        end_time = PMPI_Wtime();
 
 #ifdef PAPI_INTERFAZ
     int retval = PAPI_stop(EventSet, values);
@@ -321,14 +334,17 @@ time_t t;
         exit(1);
     }
 
-    printf("PAPI_counters: %lld  %lld %lld \n", values[0], values[1], values[2]);
+    printf("rank=%d : PAPI_counters: %lld  %lld %lld \n", myrank, values[0], values[1], values[2]);
 
-    long long tot[NUM_EVENTS];
-
+    long long tot[NUM_EVENTS], tot_partial[NUM_EVENTS];
     PMPI_Reduce(values, tot, NUM_EVENTS, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 
-    if (myrank==0)
+    PMPI_Reduce(values_partial, tot_partial, NUM_EVENTS, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    if (myrank==0) {
     printf("TOT: %lld %lld %lld  %.3f \n", tot[0], tot[1], tot[2], end_time-start_time);
+    printf("PARTIAL: %lld %lld %lld  %.3f \n", tot_partial[0], tot_partial[1], tot_partial[2], end_time-start_time);
+    }
 
     // Free PAPI resources
     PAPI_shutdown();
@@ -337,24 +353,22 @@ time_t t;
 
 #ifdef MPI_INTERFAZ 
 
-	printf("\n %d: RES=%.2f  allreduce= %.3f reduce=%.3f isend=%.3f send=%.3f irecv=%.3f recv=%.3f sendrecv=%.3f wait=%.3f waitall=%.3f waitany=%.3f barrier=%.3f alltoall=%.3f scatter=%.3f gather=%.3f allgather=%.3f \n", 
-		myrank, end_time - start_time,  allreduce_time, reduce_time, isend_time, send_time, irecv_time, recv_time, sendrecv_time, wait_time, waitall_time, waitany_time, barrier_time, alltoall_time, scatter_time, gather_time, allgather_time); 
+        printf("\n %d: RES=%.2f  allreduce= %.3f reduce=%.3f isend=%.3f send=%.3f irecv=%.3f recv=%.3f sendrecv=%.3f wait=%.3f waitall=%.3f waitany=%.3f barrier=%.3f alltoall=%.3f scatter=%.3f gather=%.3f allgather=%.3f \n",
+                myrank, end_time - start_time,  allreduce_time, reduce_time, isend_time, send_time, irecv_time, recv_time, sendrecv_time, wait_time, waitall_time, waitany_time, barrier_time, alltoall_time, scatter_time, gather_time, allgather_time);
 
+        mpi_time = allreduce_time+reduce_time+isend_time+send_time+irecv_time+recv_time+sendrecv_time+wait_time+waitall_time+waitany_time+barrier_time+alltoall_time+scatter_time+gather_time+allgather_time+bcast_time;
 
-	mpi_time = allreduce_time+reduce_time+isend_time+send_time+irecv_time+recv_time+sendrecv_time+wait_time+waitall_time+waitany_time+barrier_time+alltoall_time+scatter_time+gather_time+allgather_time+bcast_time;
-        
         PMPI_Reduce(&mpi_time, &tot_mpi, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-	if (myrank==0)
+        if (myrank==0)
         printf("\n EXECTIME: %.3f %.3f\n",  end_time-start_time, tot_mpi);
 
 #else
-	if (myrank==0)
+        if (myrank==0)
         printf("\n EXECTIME: %.3f \n",  end_time-start_time);
 #endif
 
-	PMPI_Barrier (MPI_COMM_WORLD);
+        PMPI_Barrier (MPI_COMM_WORLD);
 
 return ret;
 }
-
