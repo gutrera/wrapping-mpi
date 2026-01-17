@@ -7,7 +7,7 @@ make vm.so
 
 # Usage:
 
-# Set PAPI_LIST environment variable:
+#Set PAPI_LIST environment variable:
 #List of papi counters to trace, comma-separated and without spaces. 
 #(Ensure first that combination is permitted)
 
