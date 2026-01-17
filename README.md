@@ -7,10 +7,10 @@ make vm.so
 
 # Usage:
 
-# Set PAPI_LIST environment variable with the list of papi counters
-# to trace, comma-separated and without spaces. 
-# (Ensure first that combination is permitted)
-# If none are specified, PAPI_TOT_INS and PAPI_L3_TCM are set
+# Set PAPI_LIST environment variable:
+#List of papi counters to trace, comma-separated and without spaces. 
+#(Ensure first that combination is permitted)
+#If none are specified, PAPI_TOT_INS and PAPI_L3_TCM are set
 
 export PAPI_LIST="PAPI_TOT_INS,PAPI_L3_TCM"
 
