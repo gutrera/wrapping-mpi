@@ -1,4 +1,3 @@
-#include <mpi.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/mman.h>
