@@ -19,7 +19,7 @@ double start_time, init_time, end_time;
 
 
 #ifdef PAPI_INTERFAZ
-    #define DEFAULT_PAPI_LIST "PAPI_TOT_INS,PAPI_L3_TCM"
+    #define DEFAULT_PAPI_LIST "PAPI_L3_TCM,PAPI_DP_OPS,PAPI_TOT_CYC"
     int NUM_EVENTS=0;
     int EventSet = PAPI_NULL;
     char *papi_list;
@@ -78,12 +78,13 @@ char *count1, *count2;
     }
 
     // Initialize the set of events
-    const char *env = getenv("PAPI_LIST");
+    const char *env = getenv("PAPI_EVENTS");
+    if (env == NULL) env = getenv("PAPI_LIST");  // Fallback for backward compatibility
     char *env_papi_list;
 
     if (env==NULL) {
 	if (myrank==0)
-        fprintf(stderr, "Environement variable PAPI_LIST not defined. Assuming %s\n",
+        fprintf(stderr, "Environment variable PAPI_EVENTS not defined. Assuming %s\n",
 			DEFAULT_PAPI_LIST);
 	env_papi_list = (char *)malloc(strlen(DEFAULT_PAPI_LIST)+1);
 	strcpy(env_papi_list, DEFAULT_PAPI_LIST);
@@ -141,27 +142,97 @@ double end_time;
     }
 
     ret = PMPI_Reduce(values, tot, NUM_EVENTS, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
-    if (myrank == 0) {
-        printf("\n %d: TOTAL PAPI_counters %s: ", myrank, papi_list);
-	for (int i=0; i<NUM_EVENTS; i++) {
-	      printf(" %lld  ", tot[i]);
-	}
-	printf("\n");
+    
+    // Get output format from environment variable (default: csv)
+    const char *output_format = getenv("PAPI_OUTPUT_FORMAT");
+    if (output_format == NULL) output_format = "csv";
+    
+    // Parse event names into array
+    char *event_names[NUM_EVENTS];
+    char *papi_list_copy = strdup(papi_list);
+    char *token = strtok(papi_list_copy, ",");
+    int ev_idx = 0;
+    while (token != NULL && ev_idx < NUM_EVENTS) {
+        event_names[ev_idx++] = token;
+        token = strtok(NULL, ",");
     }
-
-    printf("\n %d: PARTIAL PAPI_counters %s: ", myrank, papi_list);
-    for (int i=0; i<NUM_EVENTS; i++) {
-        printf(" %lld  ", values[i]);
+    
+    if (strcmp(output_format, "yaml") == 0) {
+        // YAML format
+        if (myrank == 0) {
+            printf("\npapi_results:\n");
+            printf("  total:\n");
+            for (int i=0; i<NUM_EVENTS; i++) {
+                printf("    %s: %lld\n", event_names[i], tot[i]);
+            }
+            printf("  execution_time: %.3f\n", end_time-start_time);
+        }
+        printf("  rank_%d:\n", myrank);
+        for (int i=0; i<NUM_EVENTS; i++) {
+            printf("    %s: %lld\n", event_names[i], values[i]);
+        }
+    } else if (strcmp(output_format, "csv") == 0) {
+        // CSV format
+        if (myrank == 0) {
+            // Header
+            printf("\ntype,rank");
+            for (int i=0; i<NUM_EVENTS; i++) {
+                printf(",%s", event_names[i]);
+            }
+            printf("\n");
+            
+            // Total row
+            printf("TOTAL,0");
+            for (int i=0; i<NUM_EVENTS; i++) {
+                printf(",%lld", tot[i]);
+            }
+            printf("\n");
+        }
+        
+        // Wait for rank 0 to print header
+        PMPI_Barrier(MPI_COMM_WORLD);
+        
+        // Per-rank rows (in order)
+        for (int r = 0; r < nprocesses; r++) {
+            if (r == myrank) {
+                printf("PARTIAL,%d", myrank);
+                for (int i=0; i<NUM_EVENTS; i++) {
+                    printf(",%lld", values[i]);
+                }
+                printf("\n");
+                fflush(stdout);
+            }
+            PMPI_Barrier(MPI_COMM_WORLD);
+        }
+        
+        if (myrank == 0) {
+            printf("EXECTIME,0,%.3f\n", end_time-start_time);
+        }
+    } else {
+        // Original format (default fallback)
+        if (myrank == 0) {
+            printf("\n %d: TOTAL PAPI_counters %s: ", myrank, papi_list);
+            for (int i=0; i<NUM_EVENTS; i++) {
+                printf(" %lld  ", tot[i]);
+            }
+            printf("\n");
+        }
+        printf("\n %d: PARTIAL PAPI_counters %s: ", myrank, papi_list);
+        for (int i=0; i<NUM_EVENTS; i++) {
+            printf(" %lld  ", values[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
-
+    
+    free(papi_list_copy);
 
     // Free PAPI resources
     PAPI_shutdown();
-#endif
-
-	if (myrank==0)
+#else
+    // Print execution time even without PAPI
+    if (myrank==0)
         printf("\n EXECTIME: %.3f  \n",  end_time-start_time);
+#endif
 
 	ret=PMPI_Finalize ();
 return ret;
